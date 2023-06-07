@@ -28,19 +28,53 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
 
+        const usersCollection = client.db('sportsDB').collection('users')
         const classCollection = client.db('sportsDB').collection('classes')
         const instructorCollection = client.db('sportsDB').collection('instructor')
+        const myClassCollection = client.db('sportsDB').collection('myClass')
 
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
-        app.get('/classes', async(req, res)=> {
+        app.get('/classes', async (req, res) => {
             const result = await classCollection.find().toArray()
             res.send(result)
         })
 
-        app.get('/instructor', async(req, res)=> {
+        app.get('/instructor', async (req, res) => {
             const result = await instructorCollection.find().toArray()
+            res.send(result)
+        })
+
+        app.get('/users', async (req, res) => {
+            const result = await usersCollection.find().toArray()
+            res.send(result)
+        })
+
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const query = { email: user.email }
+
+            const existingUser = await usersCollection.findOne(query)
+            console.log('existing user', existingUser);
+            
+            if (existingUser) {
+                return res.send({ message: 'user already exist' })
+            }
+            const result = await usersCollection.insertOne(user)
+            res.send(result)
+        })
+
+        app.get('/myClass', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await myClassCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        app.post('/myClass', async (req, res) => {
+            const newClass = req.body
+            const result = await myClassCollection.insertOne(newClass)
             res.send(result)
         })
 
