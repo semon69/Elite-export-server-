@@ -67,15 +67,38 @@ async function run() {
             }
             next()
         }
+        const verifyInstructor = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email }
+            const user = await usersCollection.findOne(query)
+            if (user?.role !== 'instructor') {
+                return res.status(403).send({ error: true, message: 'forbidden access' })
+            }
+            next()
+        }
 
         app.get('/classes', async (req, res) => {
             const result = await classCollection.find().toArray()
             res.send(result)
         })
 
-        app.post('/classes', async(req, res)=> {
+        app.post('/classes', async (req, res) => {
             const newClass = req.body;
             const result = await classCollection.insertOne(newClass)
+            res.send(result)
+        })
+
+        app.patch('/classes/:id', async (req, res) => {
+            const status = req.body
+            console.log(status);
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    status: status.status
+                }
+            }
+            const result = await classCollection.updateOne(filter, updateDoc)
             res.send(result)
         })
 
@@ -103,7 +126,7 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+        app.get('/users/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
             if (req.decoded.email !== email) {
                 res.send({ admin: false })
@@ -113,7 +136,7 @@ async function run() {
             const result = { admin: user?.role === 'admin' }
             res.send(result)
         })
-        app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
+        app.get('/users/instructor/:email', verifyJWT, verifyInstructor, async (req, res) => {
             const email = req.params.email;
             if (req.decoded.email !== email) {
                 res.send({ instructor: false })
