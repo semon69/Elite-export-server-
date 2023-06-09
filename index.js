@@ -188,6 +188,14 @@ async function run() {
             const result = await myClassCollection.find(query).toArray()
             res.send(result)
         })
+
+        app.get('/myEnrollClass', verifyJWT, async(req, res)=> {
+            const email = req.query.email;
+            const query = {email: email}
+            const result = await enrolledCollection.find(query).toArray()
+            res.send(result)
+        })
+
         app.get('/instructorClass', async (req, res) => {
             const email = req.query.instructorEmail;
             const query = { instructorEmail: email }
