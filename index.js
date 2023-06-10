@@ -118,12 +118,17 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/popularClass', async(req, res)=> {
+            const result = await classCollection.find().sort({enrolStudent: -1}).limit(6).toArray()
+            res.send(result)
+        })
+
         app.get('/instructor', async (req, res) => {
             const result = await instructorCollection.find().toArray()
             res.send(result)
         })
 
-        app.get('/users', verifyJWT, async (req, res) => {
+        app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
             const result = await usersCollection.find().toArray()
             res.send(result)
         })
@@ -207,14 +212,14 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/paymentHistory', async(req, res)=> {
+        app.get('/paymentHistory', verifyJWT, async(req, res)=> {
             const email = req.query.email;
             const query = {email: email}
             const result = await paymentClassCollection.find(query).toArray()
             res.send(result)
         })
 
-        app.get('/instructorClass', async (req, res) => {
+        app.get('/instructorClass', verifyJWT, verifyInstructor, async (req, res) => {
             const email = req.query.instructorEmail;
             const query = { instructorEmail: email }
             const result = await classCollection.find(query).toArray()
