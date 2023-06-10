@@ -95,12 +95,23 @@ async function run() {
 
         app.patch('/classes/:id', async (req, res) => {
             const status = req.body
-            console.log(status);
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     status: status.status
+                }
+            }
+            const result = await classCollection.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+        app.patch('/classes/feedback/:id', async (req, res) => {
+            const feedback = req.body
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    feedback: feedback.feedback
                 }
             }
             const result = await classCollection.updateOne(filter, updateDoc)
@@ -196,6 +207,13 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/paymentHistory', async(req, res)=> {
+            const email = req.query.email;
+            const query = {email: email}
+            const result = await paymentClassCollection.find(query).toArray()
+            res.send(result)
+        })
+
         app.get('/instructorClass', async (req, res) => {
             const email = req.query.instructorEmail;
             const query = { instructorEmail: email }
@@ -251,6 +269,8 @@ async function run() {
 
             res.send({ insertResult, deleteResult, enrolledResult, updateClassesResult  });
         })
+
+        
 
 
 
