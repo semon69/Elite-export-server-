@@ -7,6 +7,13 @@ const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.port || 5000;
 
+// const corsConfig = {
+//     origin: '',
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE']
+// }
+// app.use(cors(corsConfig))
+// app.options("", cors(corsConfig))
 app.use(cors())
 app.use(express.json())
 
@@ -55,7 +62,7 @@ async function run() {
         const enrolledCollection = client.db('sportsDB').collection('enrolledClass')
 
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         app.post('/jwt', (req, res) => {
             const user = req.body;
@@ -212,10 +219,10 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/paymentHistory', verifyJWT, async(req, res)=> {
+        app.get('/paymentHistory',verifyJWT, async(req, res)=> {
             const email = req.query.email;
             const query = {email: email}
-            const result = await paymentClassCollection.find(query).toArray()
+            const result = await paymentClassCollection.find(query).sort({date:-1}).toArray()
             res.send(result)
         })
 
