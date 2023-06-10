@@ -227,6 +227,13 @@ async function run() {
             res.send(result)
         })
 
+        app.delete('/myClass/:id', async(req, res)=> {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)}
+            const result = await myClassCollection.deleteOne(query)
+            res.send(result)
+        })
+
         // Payment System
         app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const { price } = req.body;
@@ -269,8 +276,6 @@ async function run() {
 
             res.send({ insertResult, deleteResult, enrolledResult, updateClassesResult  });
         })
-
-        
 
 
 
