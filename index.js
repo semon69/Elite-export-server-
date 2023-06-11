@@ -64,6 +64,7 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
 
+        // verify jwt
         app.post('/jwt', (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
@@ -89,6 +90,8 @@ async function run() {
             next()
         }
 
+        // get all classes from collection
+
         app.get('/classes', async (req, res) => {
             const result = await classCollection.find().toArray()
             res.send(result)
@@ -100,6 +103,7 @@ async function run() {
             res.send(result)
         })
 
+        // change class status
         app.patch('/classes/:id', async (req, res) => {
             const status = req.body
             const id = req.params.id;
@@ -112,6 +116,8 @@ async function run() {
             const result = await classCollection.updateOne(filter, updateDoc)
             res.send(result)
         })
+
+        // take feedback from admin
         app.patch('/classes/feedback/:id', async (req, res) => {
             const feedback = req.body
             const id = req.params.id;
@@ -125,27 +131,35 @@ async function run() {
             res.send(result)
         })
 
+        // get popular classes
         app.get('/popularClass', async(req, res)=> {
             const result = await classCollection.find().sort({enrolStudent: -1}).limit(6).toArray()
             res.send(result)
         })
 
+
+        // collect fake instructor for home page
         app.get('/instructor', async (req, res) => {
             const result = await instructorCollection.find().toArray()
             res.send(result)
         })
 
+        // collect all user for admin
         app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
             const result = await usersCollection.find().toArray()
             res.send(result)
         })
 
+
+        // collect all real instructor to show instructor page
         app.get('/user/instructor', async (req, res) => {
             const query = { role: 'instructor' }
             const result = await usersCollection.find(query).toArray()
             res.send(result)
         })
 
+
+        // collect all user when they register
         app.post('/users', async (req, res) => {
             const user = req.body;
             const query = { email: user.email }
@@ -160,6 +174,7 @@ async function run() {
             res.send(result)
         })
 
+        // check admin
         app.get('/users/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             if (req.decoded.email !== email) {
@@ -170,6 +185,8 @@ async function run() {
             const result = { admin: user?.role === 'admin' }
             res.send(result)
         })
+
+        // check instructor
         app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             if (req.decoded.email !== email) {
@@ -218,7 +235,7 @@ async function run() {
             const result = await enrolledCollection.find(query).toArray()
             res.send(result)
         })
-
+        // get my payment history
         app.get('/paymentHistory',verifyJWT, async(req, res)=> {
             const email = req.query.email;
             const query = {email: email}
@@ -226,6 +243,7 @@ async function run() {
             res.send(result)
         })
 
+        // get instructor added class and only instructor can see this 
         app.get('/instructorClass', verifyJWT, verifyInstructor, async (req, res) => {
             const email = req.query.instructorEmail;
             const query = { instructorEmail: email }
@@ -262,6 +280,7 @@ async function run() {
         })
 
 
+        // collect all payment related data
         app.post('/payments', verifyJWT, async (req, res) => {
             const payment = req.body;
             const insertResult = await paymentClassCollection.insertOne(payment);
